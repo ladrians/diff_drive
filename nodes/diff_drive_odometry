@@ -19,15 +19,17 @@ class OdometryNode:
         self.odometry = odometry.Odometry()
 
     def main(self):
-        self.odomPub = rospy.Publisher('odom', Odometry, queue_size=10)
-        self.tfPub = TransformBroadcaster()
-
         rospy.init_node('diff_drive_odometry')
         self.nodeName = rospy.get_name()
         rospy.loginfo("{0} started".format(self.nodeName))
 
-        rospy.Subscriber("lwheel_ticks", Int32, self.leftCallback)
-        rospy.Subscriber("rwheel_ticks", Int32, self.rightCallback)
+        self.odom_publish_topic = rospy.get_param('~odom_publish_topic')
+        self.lwheel_topic = rospy.get_param('~lwheel_topic')
+        self.rwheel_topic = rospy.get_param('~rwheel_topic')
+        self.odomPub = rospy.Publisher(self.odom_publish_topic, Odometry, queue_size=10)
+        self.tfPub = TransformBroadcaster()
+        rospy.Subscriber(self.lwheel_topic, Int32, self.leftCallback)
+        rospy.Subscriber(self.rwheel_topic, Int32, self.rightCallback)
         rospy.Subscriber("initialpose", PoseWithCovarianceStamped,
                          self.on_initial_pose)
 
@@ -38,16 +40,32 @@ class OdometryNode:
         self.odomFrameID = rospy.get_param('~odom_frame_id', 'odom')
         self.encoderMin = int(rospy.get_param('~encoder_min', -32768))
         self.encoderMax = int(rospy.get_param('~encoder_max', 32767))
+        self.publish_tf = rospy.get_param('~publish_tf', True)
 
         self.odometry.setWheelSeparation(self.wheelSeparation)
         self.odometry.setTicksPerMeter(self.ticksPerMeter)
         self.odometry.setEncoderRange(self.encoderMin, self.encoderMax)
         self.odometry.setTime(rospy.get_time())
 
+        self.display_params()
+
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             self.publish()
             rate.sleep()
+
+    def display_params(self):
+        rospy.loginfo(" odom_publish_topic: %s" % self.odom_publish_topic)
+        rospy.loginfo(" rwheel_topic: %s" % self.rwheel_topic)
+        rospy.loginfo(" lwheel_topic: %s" % self.lwheel_topic)
+        rospy.loginfo(" rate: %s" % self.rate)
+        rospy.loginfo(" ticks_per_meter: %s" % self.ticksPerMeter)
+        rospy.loginfo(" wheel_separation: %s" % self.wheelSeparation)
+        rospy.loginfo(" base_frame_id: %s" % self.baseFrameID)
+        rospy.loginfo(" odom_frame_id: %s" % self.odomFrameID)
+        rospy.loginfo(" encoder_min: %s" % self.encoderMin)
+        rospy.loginfo(" encoder_max: %s" % self.encoderMax)
+        rospy.loginfo(" publish_tf: %s" % self.publish_tf)
 
     def publish(self):
         self.odometry.updatePose(rospy.get_time())
@@ -55,13 +73,14 @@ class OdometryNode:
         pose = self.odometry.getPose()
 
         q = quaternion_from_euler(0, 0, pose.theta)
-        self.tfPub.sendTransform(
+        if self.publish_tf is True: # Added to be able to publish TFs from another node
+          self.tfPub.sendTransform(
             (pose.x, pose.y, 0),
             (q[0], q[1], q[2], q[3]),
             now,
             self.baseFrameID,
             self.odomFrameID
-        )
+          )
 
         odom = Odometry()
         odom.header.stamp = now
