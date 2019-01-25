@@ -101,7 +101,7 @@ class OdometryNode:
              msg.pose.pose.orientation.x,
              msg.pose.pose.orientation.x,
              msg.pose.pose.orientation.w]
-        roll, pitch, yaw = euler_from_quaternion(q)
+        _, _, yaw = euler_from_quaternion(q)
 
         pose = Pose()
         pose.x = msg.pose.pose.position.x
