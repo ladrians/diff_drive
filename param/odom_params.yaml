@@ -2,8 +2,9 @@ odom_publish_topic: odom_shaft # odom_shaft2
 lwheel_topic: lwheel
 rwheel_topic: rwheel
 rate: 10 # the rate at which to publish the transform
-ticks_per_meter: 8310 # The number of wheel encoder ticks per meter of travel ( 3000 ticks / 0.361m)
-wheel_separation: 0.35 # 0.285 # 0.21 # The wheel base width in meters
+ticks_per_meter: 7915 # The number of wheel encoder ticks per meter of travel ( 3000 ticks / 0.379m)
+#ticks_per_meter: 8310 # The number of wheel encoder ticks per meter of travel ( 3000 ticks / 0.361m)
+wheel_separation: 0.28 # 0.35 # 0.21 # The wheel base width in meters
 base_frame_id: base_link # the name of the base frame of the robot
 odom_frame_id: odom # the name of the odometry reference frame
 encoder_min: -32768
