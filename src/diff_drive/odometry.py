@@ -8,11 +8,12 @@ class Odometry:
     robot using differential drive.
     """
 
-    def __init__(self):
+    def __init__(self, deltaTime=0.1):
         self.leftEncoder = Encoder()
         self.rightEncoder = Encoder()
         self.pose = Pose()
         self.lastTime = 0
+        self.deltaTime = deltaTime
 
     def setWheelSeparation(self, separation):
         self.wheelSeparation = separation
@@ -40,7 +41,7 @@ class Odometry:
         """
         leftTravel = self.leftEncoder.getDelta() / self.ticksPerMeter
         rightTravel = self.rightEncoder.getDelta() / self.ticksPerMeter
-        deltaTime = 0.1 # newTime - self.lastTime
+        deltaTime = self.deltaTime # newTime - self.lastTime
 
         deltaTravel = (rightTravel + leftTravel) / 2
         deltaTheta = (rightTravel - leftTravel) / self.wheelSeparation
