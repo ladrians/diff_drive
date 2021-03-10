@@ -78,3 +78,6 @@ class Odometry:
 
     def setPose(self, newPose):
         self.pose = newPose
+
+    def setInitialHeading(self, heading):
+        self.pose.theta = (heading) % (2*pi)
